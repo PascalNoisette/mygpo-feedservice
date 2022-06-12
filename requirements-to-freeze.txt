@@ -12,3 +12,4 @@ simplejson
 static3
 sentry-sdk
 eventlet
+urllib3

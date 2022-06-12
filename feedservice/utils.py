@@ -233,12 +233,16 @@ def parse_header_list(values):
 
     values = [x.strip() for x in values.split(',')]
     for v in values:
-        v, q = v.split(';') if ';' in v else (v, 'q=1')
-        match = q_re.match(q)
-        q = float(match.group(1)) if match else 1
-        if v == '*':
-            default_q = q
-        val_list.append( (v, q) )
+        try:
+            v, q = v.split(';') if ';' in v else (v, 'q=1')
+            match = q_re.match(q)
+            q = float(match.group(1)) if match else 1
+            if v == '*':
+                default_q = q
+                val_list.append( (v, q) )
+        except ValueError:
+            # skip hard to parse header such as report-to, nel from cloudflare
+            continue
 
     val_list = sorted(val_list, key=lambda x: x[1], reverse=True)
     val_dict = collections.defaultdict(lambda: default_q)

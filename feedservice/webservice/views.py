@@ -6,6 +6,7 @@ import urllib.parse
 import time
 import email.utils
 import cgi
+import html
 import json
 
 from django.http import HttpResponse
@@ -79,31 +80,20 @@ class ParseView(View):
 
     def send_response(self, request, podcasts, last_mod_utc, accepted_formats):
 
-        SUPPORTED_FORMATS = ['text/html', 'application/json']
-
-        fmt = select_matching_option(SUPPORTED_FORMATS, accepted_formats)
-
-        if fmt in (None, 'application/json'): #serve json as default
-            content_type = 'application/json'
-            response = HttpResponse()
-
-            dense_json = json.dumps(podcasts, sort_keys=True,
-                    indent=None, separators=(',', ':'), cls=ObjectEncoder)
-            response.write(dense_json)
-
-            if last_mod_utc:
-                last_mod_time = time.mktime(last_mod_utc)
-                response['Last-Modified'] = email.utils.formatdate(last_mod_time)
 
 
-        else:
-            content_type = 'text/html'
-            pretty_json = json.dumps(podcasts, sort_keys=True, indent=4, cls=ObjectEncoder)
-            pretty_json = cgi.escape(pretty_json)
-            response = render(request, 'pretty_response.html', {
-                    'response': pretty_json,
-                    'site': RequestSite(request),
-                })
+        content_type = 'application/json'
+        response = HttpResponse()
+ 
+        dense_json = json.dumps(podcasts, sort_keys=True,
+                indent=None, separators=(',', ':'), cls=ObjectEncoder)
+        response.write(dense_json)
+ 
+        if last_mod_utc:
+            last_mod_time = time.mktime(last_mod_utc)
+            response['Last-Modified'] = email.utils.formatdate(last_mod_time)
+ 
+
 
         response['Content-Type'] = content_type
         response['Vary'] = 'Accept, User-Agent, Accept-Encoding'
